@@ -137,8 +137,11 @@ const AdminDashboard = () => {
             <Card.Body>
               <Card.Title>Average Rating</Card.Title>
               <h2 className="text-warning">
-                {renderStars(Math.round(stats.averageRating))}
-                <span className="ms-2">({stats.averageRating}/5.0)</span>
+                <span>
+                  {renderStars(Math.round(stats.averageRating))}
+                </span>
+                <br />
+                <small>({stats.averageRating}/5.0)</small>
               </h2>
             </Card.Body>
           </Card>
@@ -231,8 +234,11 @@ const AdminDashboard = () => {
                       {movies.find(m => m.id === item.movieId)?.title || `Movie ID: ${item.movieId}`}
                     </td>
                     <td>
-                      {renderStars(item.rating)}
-                      <span className="ms-1">({item.rating}/5)</span>
+                      <div>
+                        {renderStars(item.rating)}
+                        <br />
+                        <small>({item.rating}/5)</small>
+                      </div>
                     </td>
                     <td>
                       <small>{item.comment.substring(0, 50)}...</small>
