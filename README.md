@@ -52,25 +52,55 @@ movie-feedback/
 
 ## Quick Start
 
-1. **Prerequisites:**
-   - Java 17+
-   - Node.js 18+
-   - Docker
-   - Kubernetes cluster (minikube/local)
+### Option 1: Run with Docker (Recommended)
 
-2. **Build and Run:**
+1. **Prerequisites:**
+   - Docker Desktop for Windows/Mac/Linux
+   - Download from: https://www.docker.com/products/docker-desktop/
+
+2. **Start the application:**
    ```bash
-   # Build all services
+   # Windows
+   scripts\run-docker.bat
+   
+   # Linux/Mac
+   chmod +x scripts/build.sh
    ./scripts/build.sh
+   cd infrastructure/docker
+   docker compose up -d
+   ```
+
+### Option 2: Run Locally (Without Docker)
+
+1. **Prerequisites:**
+   - Java 17+ (Download from: https://adoptium.net/)
+   - Node.js 18+ (Download from: https://nodejs.org/)
+   - Maven (Download from: https://maven.apache.org/download.cgi)
+
+2. **Start the application:**
+   ```bash
+   # Windows
+   scripts\run-local.bat
    
-   # Run with Docker Compose
-   docker-compose up -d
-   
-   # Deploy to Kubernetes
+   # Linux/Mac
+   # Start each service manually in separate terminals
+   ```
+
+### Option 3: Deploy to Kubernetes
+
+1. **Prerequisites:**
+   - Kubernetes cluster (minikube, Docker Desktop, or cloud)
+   - kubectl CLI tool
+
+2. **Deploy:**
+   ```bash
    kubectl apply -f infrastructure/kubernetes/
    ```
 
-3. **Access the Application:**
-   - Frontend: http://localhost:3000
-   - API Gateway: http://localhost:8080
-   - Admin UI: http://localhost:3000/admin
+## Access the Application
+
+Once started, access the application at:
+- **Frontend**: http://localhost:3000
+- **API Gateway**: http://localhost:8080
+- **Eureka Dashboard**: http://localhost:8761
+- **Admin UI**: http://localhost:3000/admin
