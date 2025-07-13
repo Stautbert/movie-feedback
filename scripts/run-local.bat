@@ -77,7 +77,7 @@ timeout /t 15 /nobreak >nul
 
 REM Start Frontend
 echo [INFO] Starting Frontend...
-start "Frontend" cmd /k "cd /d %CD%\frontend && echo Installing dependencies... && npm install && echo Starting Frontend... && npm start"
+start "Frontend" cmd /k "cd /d "%~dp0..\frontend" && echo Installing dependencies... && npm install && echo Starting Frontend... && npm start"
 
 echo.
 echo [SUCCESS] Movie Feedback System is starting up!

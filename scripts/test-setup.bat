@@ -85,7 +85,7 @@ if errorlevel 1 (
 )
 cd ..\..
 
-cd backend\api-gateway
+cd "%~dp0..\backend\api-gateway"
 echo [INFO] Compiling API Gateway...
 call mvn compile -q
 if errorlevel 1 (
@@ -95,7 +95,7 @@ if errorlevel 1 (
 )
 cd ..\..
 
-cd backend\eureka-server
+cd "%~dp0..\backend\eureka-server"
 echo [INFO] Compiling Eureka Server...
 call mvn compile -q
 if errorlevel 1 (
@@ -103,7 +103,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-cd ..\..
+cd "%~dp0..\scripts"
 
 echo.
 echo [SUCCESS] All tests passed! Your setup is ready.

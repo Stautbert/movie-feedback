@@ -11,7 +11,7 @@ if errorlevel 1 (
 )
 
 REM Navigate to the docker-compose file location
-cd infrastructure\docker
+cd "%~dp0..\infrastructure\docker"
 
 REM Try docker compose (newer versions)
 docker compose --version >nul 2>&1

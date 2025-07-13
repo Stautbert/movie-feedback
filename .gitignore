@@ -1,2 +1,27 @@
-node_modules
-node_modules
+# Node.js
+node_modules/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Java
+target/
+*.jar
+*.war
+*.log
+hs_err_pid*.log
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

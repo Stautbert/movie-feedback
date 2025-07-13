@@ -64,11 +64,11 @@ if errorlevel 1 (
     echo [ERROR] Failed to build Eureka Server
     exit /b 1
 )
-cd ..\..
+cd "%~dp0..\scripts"
 
 REM Build frontend
 echo [INFO] Building Frontend...
-cd frontend
+cd "%~dp0..\frontend"
 call npm install
 if errorlevel 1 (
     echo [ERROR] Failed to install frontend dependencies
@@ -79,7 +79,7 @@ if errorlevel 1 (
     echo [ERROR] Failed to build frontend
     exit /b 1
 )
-cd ..
+cd "%~dp0..\scripts"
 
 REM Build Docker images
 echo [INFO] Building Docker images...
