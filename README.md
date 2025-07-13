@@ -15,7 +15,7 @@ Few non-functional requirements are
 • Automate all stages within a CI/CD pipeline
 
 Nice to have:
-• UI is optional but nice if you can create something quickly
+• UI is required for this application.
 
 Expected Artifacts:
 • Architechture diagram and sequence diagram
