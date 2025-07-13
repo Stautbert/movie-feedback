@@ -1,0 +1,206 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Test Movie Service
+      run: |
+        cd backend/movie-service
+        mvn clean test
+    
+    - name: Test Feedback Service
+      run: |
+        cd backend/feedback-service
+        mvn clean test
+    
+    - name: Test API Gateway
+      run: |
+        cd backend/api-gateway
+        mvn clean test
+    
+    - name: Test Eureka Server
+      run: |
+        cd backend/eureka-server
+        mvn clean test
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          backend/*/target/surefire-reports/
+          backend/*/target/jacoco/
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build and push Movie Service
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./infrastructure/docker/Dockerfile.movie-service
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/movie-service:${{ github.sha }}
+    
+    - name: Build and push Feedback Service
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./infrastructure/docker/Dockerfile.feedback-service
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/feedback-service:${{ github.sha }}
+    
+    - name: Build and push API Gateway
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./infrastructure/docker/Dockerfile.api-gateway
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:${{ github.sha }}
+    
+    - name: Build and push Eureka Server
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./infrastructure/docker/Dockerfile.eureka-server
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/eureka-server:${{ github.sha }}
+    
+    - name: Build and push Frontend
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./infrastructure/docker/Dockerfile.frontend
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+
+  security-scan:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/movie-service:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  deploy-staging:
+    needs: [build, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Deploy to staging
+      run: |
+        kubectl apply -f infrastructure/kubernetes/
+        kubectl set image deployment/movie-service movie-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/movie-service:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/feedback-service feedback-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/feedback-service:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/api-gateway api-gateway=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/eureka-server eureka-server=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/eureka-server:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} -n movie-feedback
+
+  deploy-production:
+    needs: [build, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Deploy to production
+      run: |
+        kubectl apply -f infrastructure/kubernetes/
+        kubectl set image deployment/movie-service movie-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/movie-service:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/feedback-service feedback-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/feedback-service:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/api-gateway api-gateway=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/eureka-server eureka-server=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/eureka-server:${{ github.sha }} -n movie-feedback
+        kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} -n movie-feedback 
