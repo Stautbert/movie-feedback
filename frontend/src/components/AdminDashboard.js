@@ -141,7 +141,7 @@ const AdminDashboard = () => {
                   {renderStars(Math.round(stats.averageRating))}
                 </span>
                 <br />
-                <small>({stats.averageRating}/5.0)</small>
+                <span className="text-muted">({stats.averageRating}/5.0)</span>
               </h2>
             </Card.Body>
           </Card>
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
                     <td>
                       <strong>{movie.title}</strong>
                       <br />
-                      <small className="text-muted">{movie.description.substring(0, 50)}...</small>
+                      <span className="text-muted">{movie.description.substring(0, 50)}...</span>
                     </td>
                     <td>{movie.director}</td>
                     <td>
@@ -226,8 +226,10 @@ const AdminDashboard = () => {
                     <td>
                       <strong>{item.visitorName}</strong>
                       {item.visitorEmail && (
-                        <br />
-                        <small className="text-muted">{item.visitorEmail}</small>
+                        <>
+                          <br />
+                          <span className="text-muted">{item.visitorEmail}</span>
+                        </>
                       )}
                     </td>
                     <td>
@@ -237,14 +239,14 @@ const AdminDashboard = () => {
                       <div>
                         {renderStars(item.rating)}
                         <br />
-                        <small>({item.rating}/5)</small>
+                        <span>({item.rating}/5)</span>
                       </div>
                     </td>
                     <td>
-                      <small>{item.comment.substring(0, 50)}...</small>
+                      <span>{item.comment.substring(0, 50)}...</span>
                     </td>
                     <td>
-                      <small>{new Date(item.createdAt).toLocaleDateString()}</small>
+                      <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                     </td>
                     <td>
                       <Button 
