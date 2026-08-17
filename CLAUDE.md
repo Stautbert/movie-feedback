@@ -49,7 +49,9 @@ Start in this order (each depends on the previous being reachable): `eureka-serv
 
 ### CI
 
-`infrastructure/ci-cd/.github/workflows/ci-cd.yml` runs `mvn clean test` separately for each of the four backend services on every push/PR, then (on push only) builds and pushes Docker images, runs a Trivy scan, and deploys to Kubernetes (`develop` → staging, `main` → production).
+`.github/workflows/ci-cd.yml` runs `mvn clean test` separately for each of the four backend services on every push/PR, then (on push only) builds and pushes Docker images, runs a Trivy scan, and deploys to Kubernetes (`develop` → staging, `main` → production). It was previously nested under `infrastructure/ci-cd/.github/workflows/`, a path GitHub Actions never scans, so it never actually ran until it was moved to the repo root.
+
+`.github/workflows/claude.yaml` runs Claude Code on demand: comment `@claude ...` on a PR (review comment, or PR review body) to trigger it. Requires an `ANTHROPIC_API_KEY` repository secret.
 
 ## Testing conventions
 
