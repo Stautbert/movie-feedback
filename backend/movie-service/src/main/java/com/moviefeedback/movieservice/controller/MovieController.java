@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/movies")
-@CrossOrigin(origins = "*")
 public class MovieController {
     
     private static final Logger logger = LoggerFactory.getLogger(MovieController.class);
