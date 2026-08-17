@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$stdin=[Console]::In.ReadToEnd(); $data=$stdin|ConvertFrom-Json; $cmd=$data.tool_input.command; if($cmd){ $b=($cmd -imatch 'git\\s+branch\\s+(-[a-zA-Z]*[dD][a-zA-Z]*|--delete)\\b') -or ($cmd -imatch 'git\\s+push\\b.*(--delete\\b|\\s-d\\b)') -or ($cmd -match 'git\\s+push\\s+\\S+\\s+:\\S+') -or (($cmd -imatch 'gh\\s+api\\b') -and ($cmd -imatch '-X\\s*DELETE|--method\\s+DELETE') -and ($cmd -match 'refs/heads')); if($b){ (@{hookSpecificOutput=@{hookEventName='PreToolUse';permissionDecision='deny';permissionDecisionReason='Blocked by project safety hook: branch-deletion commands are disabled in this repo (see .claude/settings.json). Ask the user to delete the branch themselves if it is truly needed.'}} | ConvertTo-Json -Depth 5 -Compress) } }",
+            "statusMessage": "Checking for branch-deletion commands..."
+          }
+        ]
+      }
+    ]
+  }
+}
