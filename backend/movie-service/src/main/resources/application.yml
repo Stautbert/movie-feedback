@@ -24,11 +24,6 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
-  
-  security:
-    user:
-      name: admin
-      password: admin123
 
 eureka:
   client:

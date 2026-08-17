@@ -54,7 +54,6 @@ The Movie Feedback Collection System is a microservice-based application that al
 - **Orchestration**: Kubernetes
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Spring Boot Actuator, Prometheus
-- **Security**: Spring Security (basic)
 
 ## Microservices Architecture
 
@@ -163,14 +162,13 @@ public class Feedback {
 ## Security Considerations
 
 ### Current Implementation
-- Basic authentication for admin endpoints
 - Input validation and sanitization
 - CORS configuration
 - SQL injection prevention (JPA)
 
 ### Recommended Enhancements
+- Authentication and role-based access control (RBAC) to distinguish admin from visitor operations
 - JWT token-based authentication
-- Role-based access control (RBAC)
 - API rate limiting
 - HTTPS enforcement
 - Input/output encryption
